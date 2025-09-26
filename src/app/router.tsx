@@ -4,7 +4,11 @@ import { App } from "./app";
 
 export const router = createBrowserRouter([
   {
-    element: <App />,
+    element: (
+
+          <App />
+
+    ),
     children: [
       {
         path: ROUTES.BOARDS,
