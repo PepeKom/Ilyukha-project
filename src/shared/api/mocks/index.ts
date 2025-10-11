@@ -4,5 +4,9 @@ export async function enableMocking() {
     }
 
     const {worker} = await import("@/shared/api/mocks/browser");
-    return worker.start();
+
+    // Start MSW with logging
+    return worker.start({
+        onUnhandledRequest: "warn",
+    });
 }

@@ -1,4 +1,5 @@
 import {setupWorker} from "msw/browser";
-import {boardsHandlers} from "./handlers/boards";
+import {handlers} from "./handlers";
 
-export const worker = setupWorker(...boardsHandlers);
+export const worker = setupWorker(...handlers);
+

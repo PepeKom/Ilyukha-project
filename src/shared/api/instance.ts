@@ -20,7 +20,8 @@ fetchClient.use({
 
         if (token) {
             request.headers.set("Authorization", `Bearer ${token}`);
-        } else {
+        }
+        else {
             return new Response(
                 JSON.stringify({
                     code: "NOT_AUTHOIZED",
