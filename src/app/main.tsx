@@ -3,12 +3,12 @@ import {createRoot} from "react-dom/client";
 import "./index.css";
 import {RouterProvider} from "react-router-dom";
 import {router} from "./router";
-import {Providers} from './providers'
+import {enableMocking} from "@/shared/api/mocks";
 
-createRoot(document.getElementById("root")!).render(
-    <StrictMode>
-        <Providers>
+enableMocking().then(() => {
+    createRoot(document.getElementById("root")!).render(
+        <StrictMode>
             <RouterProvider router={router}/>
-        </Providers>
-    </StrictMode>
-);
+        </StrictMode>
+    );
+});

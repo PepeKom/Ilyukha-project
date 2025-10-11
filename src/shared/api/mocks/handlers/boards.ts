@@ -18,3 +18,4 @@ export const boardsHandlers = [
     return HttpResponse.json(boards);
   }),
 ];
+

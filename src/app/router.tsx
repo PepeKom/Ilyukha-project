@@ -1,35 +1,57 @@
-import { ROUTES } from "../shared/model/routes";
-import { createBrowserRouter, redirect } from "react-router-dom";
-import { App } from "./app";
+import {ROUTES} from "../shared/model/routes";
+import {createBrowserRouter, redirect} from "react-router-dom";
+import {App} from "./app";
+import {AppHeader} from "@/features/header";
+import {ProtectedRoute} from "@/app/protected-route";
+import {Providers} from "@/app/providers";
 
 export const router = createBrowserRouter([
-  {
-    element: (
+    {
+        element: (
+            <Providers>
+                <App/>
+            </Providers>
+        ),
+        children: [
+            // {
+            //     element: (
+            //         <>
+            //             <AppHeader/>
+            //             <ProtectedRoute/>
+            //         </>
+            //     ),
+            //     children: [
+            //         {
+            //             path: ROUTES.BOARDS,
+            //             lazy: () => import("@/features/boards-list/boards-list.page"),
+            //         },
+            //         {
+            //             path: ROUTES.BOARD,
+            //             lazy: () => import("@/features/board/board.page"),
+            //         },
+            //     ],
+            // },
 
-          <App />
-
-    ),
-    children: [
-      {
-        path: ROUTES.BOARDS,
-        lazy: () => import("@/features/boards-list/boards-list.page"),
-      },
-      {
-        path: ROUTES.BOARD,
-        lazy: () => import("@/features/board/board.page"),
-      },
-      {
-        path: ROUTES.LOGIN,
-        lazy: () => import("@/features/auth/login.page"),
-      },
-      {
-        path: ROUTES.REGISTER,
-        lazy: () => import("@/features/auth/register.page"),
-      },
-      {
-        path: ROUTES.HOME,
-        loader: () => redirect(ROUTES.BOARDS),
-      },
-    ],
-  },
+            {
+                path: ROUTES.BOARDS,
+                lazy: () => import("@/features/boards-list/boards-list.page"),
+            },
+            {
+                path: ROUTES.BOARD,
+                lazy: () => import("@/features/board/board.page"),
+            },
+            {
+                path: ROUTES.LOGIN,
+                lazy: () => import("@/features/auth/login.page"),
+            },
+            {
+                path: ROUTES.REGISTER,
+                lazy: () => import("@/features/auth/register.page"),
+            },
+            {
+                path: ROUTES.HOME,
+                loader: () => redirect(ROUTES.BOARDS),
+            },
+        ],
+    },
 ]);
