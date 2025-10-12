@@ -1,53 +1,112 @@
-import {ROUTES} from "@/shared/model/routes";
-import {Link, href} from "react-router-dom";
-import {CONFIG} from "@/shared/model/config";
-import {useQuery, useQueryClient} from "@tanstack/react-query";
-import {rqClient} from "@/shared/api/instance";
+import { useState } from "react";
+import { Button } from "@/shared/ui/kit/button";
+import { useBoardsList } from "./model/use-boards-list";
+import { useBoardsFilters } from "./model/use-boards-filters";
+import { useDebouncedValue } from "@/shared/lib/react";
+import { useCreateBoard } from "./model/use-create-board";
+
+import { PlusIcon } from "lucide-react";
+import {
+  BoardsListLayout,
+  BoardsListLayoutContent,
+  BoardsListLayoutFilters,
+  BoardsListLayoutHeader,
+} from "./ui/boards-list-layout";
+import {type  ViewMode, ViewModeToggle } from "./ui/view-mode-toggle";
+import { BoardsSortSelect } from "./ui/boards-sort-select";
+import { BoardsSearchInput } from "./ui/boards-search-input";
+import { BoardItem } from "./compose/board-item";
+import { BoardCard } from "./compose/board-card";
+import { BoardsSidebar } from "./ui/boards-sidebar";
+import {
+  TemplatesGallery,
+  TemplatesModal,
+  useTemplatesModal,
+} from "@/features/board-templates";
 
 function BoardsListPage() {
-    const queryClient = useQueryClient();
-    const boardsQuery = useQuery(rqClient.queryOptions("get", "/boards"));
+  const boardsFilters = useBoardsFilters();
+  const boardsQuery = useBoardsList({
+    sort: boardsFilters.sort,
+    search: useDebouncedValue(boardsFilters.search, 300),
+  });
 
-    const deleteBoardMutation = rqClient.useMutation(
-        "delete",
-        "/boards/{boardId}",
-        {
-            onSettled: () => {
-                return queryClient.invalidateQueries(
-                    rqClient.queryOptions("get", "/boards")
-                );
-            },
-        }
-    );
+  const templatesModal = useTemplatesModal();
 
-    const createBoardMutation = rqClient.useMutation("post", "/boards", {
-        onSettled: () => {
-            return queryClient.invalidateQueries(
-                rqClient.queryOptions("get", "/boards")
-            );
-        },
-    });
+  const createBoard = useCreateBoard();
 
-    // Debugging
-    console.log("boardsQuery:", {
-        data: boardsQuery.data,
-        isLoading: boardsQuery.isLoading,
-        isError: boardsQuery.isError,
-        error: boardsQuery.error,
-    });
+  const [viewMode, setViewMode] = useState<ViewMode>("list");
 
-    return (
-        <div>
-            <h1>Boards list {CONFIG.API_BASE_URL}</h1>
-            {boardsQuery.isLoading && <p>Loading...</p>}
-            {boardsQuery.isError && <p>Error: {JSON.stringify(boardsQuery.error)}</p>}
-            {
-                boardsQuery?.data?.map(board => (
-                    <Link key={board.id} to={href(ROUTES.BOARD, {boardId: board.id})}>{board.name}</Link>
-                ))
+  return (
+    <>
+      <TemplatesModal />
+      <BoardsListLayout
+        templates={<TemplatesGallery />}
+        sidebar={<BoardsSidebar />}
+        header={
+          <BoardsListLayoutHeader
+            title="Доски"
+            description="Здесь вы можете просматривать и управлять своими досками"
+            actions={
+              <>
+                <Button variant="outline" onClick={() => templatesModal.open()}>
+                  Выбрать шаблон
+                </Button>
+                <Button
+                  disabled={createBoard.isPending}
+                  onClick={createBoard.createBoard}
+                >
+                  <PlusIcon />
+                  Создать доску
+                </Button>
+              </>
             }
-        </div>
-    );
+          />
+        }
+        filters={
+          <BoardsListLayoutFilters
+            sort={
+              <BoardsSortSelect
+                value={boardsFilters.sort}
+                onValueChange={boardsFilters.setSort}
+              />
+            }
+            filters={
+              <BoardsSearchInput
+                value={boardsFilters.search}
+                onChange={boardsFilters.setSearch}
+              />
+            }
+            actions={
+              <ViewModeToggle
+                value={viewMode}
+                onChange={(value) => setViewMode(value)}
+              />
+            }
+          />
+        }
+      >
+        <BoardsListLayoutContent
+          isEmpty={boardsQuery.boards.length === 0}
+          isPending={boardsQuery.isPending}
+          isPendingNext={boardsQuery.isFetchingNextPage}
+          cursorRef={boardsQuery.cursorRef}
+          hasCursor={boardsQuery.hasNextPage}
+          mode={viewMode}
+          renderList={() =>
+            boardsQuery.boards.map((board) => (
+              <BoardItem key={board.id} board={board} />
+            ))
+          }
+          renderGrid={() =>
+            boardsQuery.boards.map((board) => (
+              <BoardCard key={board.id} board={board} />
+            ))
+          }
+        />
+      </BoardsListLayout>
+    </>
+  );
 }
 
 export const Component = BoardsListPage;
